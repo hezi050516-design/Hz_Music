@@ -37,6 +37,10 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/songs", handlers.ListSongs)
 	mux.HandleFunc("/api/songs/", handlers.SongRouter)
+	mux.HandleFunc("/api/albums", handlers.ListAlbums)
+	mux.HandleFunc("/api/artists", handlers.ListArtists)
+	mux.HandleFunc("/api/upload", handlers.UploadSong)
+	mux.HandleFunc("/api/scan", handlers.TriggerScan)
 	addr := ":8080"
 	log.Printf("Server starting on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, withCORS(mux)))
