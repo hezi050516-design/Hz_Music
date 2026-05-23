@@ -4,12 +4,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"hz-music/server/db"
 )
 
 var (
-	musicDir = "music"
-	coverDir = "covers"
-	dbPath   = "music.db"
+	musicDir  = "music"
+	coverDir  = "covers"
+	dbPath    = "music.json"
 )
 
 func main() {
@@ -17,6 +19,10 @@ func main() {
 		log.Fatal(err)
 	}
 	if err := os.MkdirAll(coverDir, 0755); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := db.Init(dbPath); err != nil {
 		log.Fatal(err)
 	}
 
