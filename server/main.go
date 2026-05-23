@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"hz-music/server/db"
+	"hz-music/server/scanner"
 )
 
 var (
@@ -24,6 +25,12 @@ func main() {
 
 	if err := db.Init(dbPath); err != nil {
 		log.Fatal(err)
+	}
+
+	if n, err := scanner.ScanMusicDir(musicDir); err != nil {
+		log.Printf("Error scanning music directory: %v", err)
+	} else {
+		log.Printf("Added %d new songs", n)
 	}
 
 	mux := http.NewServeMux()
