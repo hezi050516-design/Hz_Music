@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"hz-music/server/db"
+	"hz-music/server/handlers"
 	"hz-music/server/scanner"
 )
 
@@ -34,6 +35,8 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("/api/songs", handlers.ListSongs)
+	mux.HandleFunc("/api/songs/", handlers.SongRouter)
 	addr := ":8080"
 	log.Printf("Server starting on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, withCORS(mux)))
