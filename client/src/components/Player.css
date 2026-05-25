@@ -1,71 +1,88 @@
 .player {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #1a1a2e;
-  color: #eee;
-  padding: 8px 12px;
+  bottom: var(--tab-height);
+  left: 0; right: 0;
+  height: var(--player-height);
+  background: var(--bg-card);
+  z-index: 99;
+}
+.player-progress-bar {
+  height: 3px;
+  background: var(--bg-hover);
+  cursor: pointer;
+}
+.player-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.2s linear;
+}
+.player-progress-bar:hover .player-progress-fill {
+  background: #1ed760;
+}
+.player-main {
   display: flex;
   align-items: center;
+  padding: 6px 12px;
   gap: 12px;
-  z-index: 100;
 }
 .player-info {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
+  cursor: pointer;
 }
 .player-info strong {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: block;
+  font-size: 13px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .player-info span {
-  font-size: 12px;
-  color: #888;
+  font-size: 11px;
+  color: var(--text-dim);
 }
-.player-controls button {
-  background: none;
-  border: none;
-  color: #eee;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px;
-}
-.player-progress {
-  flex: 2;
+.player-ctrls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
 }
-.player-progress input[type="range"] {
-  flex: 1;
-  accent-color: #7c3aed;
+.player-ctrls button {
+  color: var(--text-secondary);
+  padding: 2px;
 }
-.player-controls button:disabled {
-  opacity: 0.3;
-  cursor: default;
+.player-ctrls button:hover { color: var(--text-primary); }
+.play-btn {
+  background: var(--text-primary) !important;
+  border-radius: 50% !important;
+  width: 34px; height: 34px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #000 !important;
+}
+.active-ctrl { color: var(--accent) !important; }
+.player-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.player-time {
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
 }
 .volume-slider {
-  max-width: 60px;
-  flex: 0 !important;
+  width: 60px;
+  accent-color: var(--accent);
+  height: 3px;
 }
-.time {
-  font-size: 11px;
-  color: #888;
-  min-width: 32px;
-}
-.player-error {
+.player-error-msg {
   position: absolute;
-  top: -28px;
-  left: 0;
-  right: 0;
+  top: -22px;
+  left: 0; right: 0;
   background: #e74c3c;
   color: #fff;
   font-size: 11px;
-  padding: 4px 12px;
+  padding: 2px 12px;
   text-align: center;
 }

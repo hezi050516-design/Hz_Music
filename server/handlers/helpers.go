@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,4 +23,9 @@ func extractID(path, prefix string) int64 {
 	idStr = strings.Split(idStr, "/")[0]
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	return id
+}
+
+func jsonDecode(r *http.Request, v interface{}) error {
+	defer r.Body.Close()
+	return json.NewDecoder(io.LimitReader(r.Body, 1<<16)).Decode(v)
 }

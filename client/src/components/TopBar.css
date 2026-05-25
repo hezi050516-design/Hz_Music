@@ -1,0 +1,31 @@
+.topbar {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  background: var(--bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-title {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 700;
+}
+.topbar-icon {
+  padding: 4px;
+  color: var(--text-primary);
+}
+.topbar-back {
+  padding: 4px;
+  color: var(--text-primary);
+}
+.topbar-search-input {
+  flex: 1;
+  font-size: 16px !important;
+  padding: 8px 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}

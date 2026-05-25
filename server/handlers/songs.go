@@ -42,8 +42,7 @@ func ListSongs(w http.ResponseWriter, r *http.Request) {
 		var filtered []models.Song
 		for _, s := range songs {
 			if strings.Contains(strings.ToLower(s.Title), qLower) ||
-				strings.Contains(strings.ToLower(s.Artist), qLower) ||
-				strings.Contains(strings.ToLower(s.Album), qLower) {
+				strings.Contains(strings.ToLower(s.Artist), qLower) {
 				filtered = append(filtered, s)
 			}
 		}
@@ -99,6 +98,9 @@ func StreamSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("ETag", fmt.Sprintf(`"%d-%d"`, stat.ModTime().Unix(), stat.Size()))
+
 	dot := strings.LastIndex(song.FilePath, ".")
 	if dot < 0 {
 		dot = len(song.FilePath)
@@ -117,17 +119,24 @@ func StreamSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var start, end int64
-	n, err := fmt.Sscanf(rangeHeader, "bytes=%d-%d", &start, &end)
-	if err != nil || n < 1 {
+	rangeStr := strings.TrimPrefix(rangeHeader, "bytes=")
+	parts := strings.SplitN(rangeStr, "-", 2)
+	if len(parts) < 2 {
 		http.Error(w, "invalid range", http.StatusRequestedRangeNotSatisfiable)
 		return
 	}
 
-	if end == 0 || end >= stat.Size() {
+	start, _ := strconv.ParseInt(parts[0], 10, 64)
+	var end int64
+	if parts[1] != "" {
+		end, _ = strconv.ParseInt(parts[1], 10, 64)
+	} else {
 		end = stat.Size() - 1
 	}
 
+	if end > stat.Size()-1 {
+		end = stat.Size() - 1
+	}
 	if start > end || start >= stat.Size() {
 		http.Error(w, "range not satisfiable", http.StatusRequestedRangeNotSatisfiable)
 		return

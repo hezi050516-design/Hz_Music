@@ -39,20 +39,15 @@ func ScanMusicDir(dir string) (int, error) {
 			return nil
 		}
 		name := strings.TrimSuffix(filepath.Base(path), ext)
-		artist := ""
 		title := name
-		if idx := strings.Index(name, " - "); idx != -1 {
-			artist = strings.TrimSpace(name[:idx])
-			title = strings.TrimSpace(name[idx+3:])
-		}
-		dir := filepath.Base(filepath.Dir(path))
-		if dir == "." || dir == "/" {
-			dir = ""
+		artist := ""
+		if idx := strings.Index(name, "_"); idx != -1 {
+			title = strings.TrimSpace(name[:idx])
+			artist = strings.TrimSpace(name[idx+1:])
 		}
 		song := models.Song{
 			Title:     title,
 			Artist:    artist,
-			Album:     dir,
 			FilePath:  path,
 			FileSize:  info.Size(),
 			Format:    strings.TrimPrefix(ext, "."),

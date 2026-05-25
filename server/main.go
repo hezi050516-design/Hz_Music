@@ -37,9 +37,10 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/songs", handlers.ListSongs)
 	mux.HandleFunc("/api/songs/", handlers.SongRouter)
-	mux.HandleFunc("/api/albums", handlers.ListAlbums)
 	mux.HandleFunc("/api/artists", handlers.ListArtists)
-	mux.HandleFunc("/api/upload", handlers.UploadSong)
+	mux.HandleFunc("/api/register", handlers.Register)
+	mux.HandleFunc("/api/login", handlers.Login)
+	mux.HandleFunc("/api/upload", handlers.AuthMiddleware(handlers.UploadSong))
 	mux.HandleFunc("/api/scan", handlers.TriggerScan)
 	addr := ":8080"
 	log.Printf("Server starting on %s", addr)
@@ -50,7 +51,7 @@ func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == "OPTIONS" {
 			return
 		}

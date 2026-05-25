@@ -1,62 +1,46 @@
 import { useState, useEffect } from "react"
 import { api } from "../api/client"
 import SongList from "../components/SongList"
-import NavBar from "../components/NavBar"
-import SearchBar from "../components/SearchBar"
+import { ArrowLeft } from "lucide-react"
 
-export default function Artists() {
+const COLORS = ["#1DB954","#E91E63","#9C27B0","#FF9800","#2196F3","#00BCD4","#4CAF50","#FF5722"]
+function getColor(key) { return COLORS[(key?.charCodeAt(0) || 0) % COLORS.length] }
+
+export default function Artists({ search }) {
   const [artists, setArtists] = useState([])
-  const [selectedArtist, setSelectedArtist] = useState(null)
+  const [selected, setSelected] = useState(null)
   const [songs, setSongs] = useState([])
-  const [query, setQuery] = useState("")
 
+  useEffect(() => { api("/api/artists").then(setArtists).catch(() => setArtists([])) }, [])
   useEffect(() => {
-    api("/api/artists").then(setArtists).catch(() => setArtists([]))
-  }, [])
+    if (selected) api("/api/songs").then(s => setSongs(s.filter(sg => sg.artist === selected))).catch(() => setSongs([]))
+  }, [selected])
 
-  useEffect(() => {
-    if (selectedArtist) {
-      api(`/api/songs?q=${encodeURIComponent(selectedArtist)}`)
-        .then(s => setSongs(s.filter(song => song.artist === selectedArtist)))
-        .catch(() => setSongs([]))
-    }
-  }, [selectedArtist])
+  const filtered = artists.filter(a => !search || a.name.toLowerCase().includes(search.toLowerCase()))
 
-  if (selectedArtist) {
-    const filtered = query
-      ? songs.filter(s => s.title.toLowerCase().includes(query.toLowerCase()))
-      : songs
-
+  if (selected) {
     return (
       <div className="page">
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-          <button onClick={() => setSelectedArtist(null)} style={{background:"#333",padding:"6px 12px",fontSize:13,margin:0}}>← 返回</button>
-          <h2 style={{margin:0,fontSize:16}}>{selectedArtist}</h2>
-        </div>
-        <SearchBar value={query} onChange={setQuery} />
-        <SongList songs={filtered} />
-        <NavBar />
+        <button onClick={() => setSelected(null)} style={{display:"flex",alignItems:"center",gap:4,marginBottom:12,color:"var(--text-primary)",fontSize:16,fontWeight:600}}>
+          <ArrowLeft size={20} /> {selected}
+        </button>
+        <SongList songs={songs} />
       </div>
     )
   }
 
-  const filteredArtists = query
-    ? artists.filter(a => a.name.toLowerCase().includes(query.toLowerCase()))
-    : artists
-
   return (
     <div className="page">
-      <h2>歌手</h2>
-      <SearchBar value={query} onChange={setQuery} placeholder="搜索歌手..." />
-      <div className="grid">
-        {filteredArtists.map((a, i) => (
-          <div key={i} className="card" onClick={() => setSelectedArtist(a.name)}>
-            <h3>{a.name}</h3>
+      <div className="artist-grid">
+        {filtered.map(a => (
+          <div key={a.name} className="artist-card" style={{background:getColor(a.name)}}
+            onClick={() => setSelected(a.name)}>
+            <strong>{a.name}</strong>
+            <span>歌手</span>
           </div>
         ))}
       </div>
-      {!filteredArtists.length && <p className="empty">暂无歌手</p>}
-      <NavBar />
+      {!filtered.length && <p className="empty">暂无歌手</p>}
     </div>
   )
 }

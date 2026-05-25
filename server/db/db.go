@@ -1,29 +1,34 @@
 package db
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"hz-music/server/models"
 	"os"
+	"strings"
 	"sync"
 )
 
 var (
-	mu       sync.RWMutex
-	DB       *Store
+	mu sync.RWMutex
+	DB *Store
 )
 
 type Store struct {
-	Songs   []models.Song   `json:"songs"`
-	Albums  []models.Album  `json:"albums"`
-	Artists []models.Artist `json:"artists"`
-	nextID  int64
+	Songs    []models.Song   `json:"songs"`
+	Albums   []models.Album  `json:"albums"`
+	Artists  []models.Artist `json:"artists"`
+	Users    []models.User   `json:"users"`
+	Tokens   map[string]string `json:"tokens"`
+	nextID   int64
 	filePath string
 }
 
 func Init(dbPath string) error {
 	mu.Lock()
 	defer mu.Unlock()
-	DB = &Store{filePath: dbPath}
+	DB = &Store{filePath: dbPath, Tokens: make(map[string]string)}
 	data, err := os.ReadFile(dbPath)
 	if err != nil {
 		DB.nextID = 1
@@ -33,8 +38,10 @@ func Init(dbPath string) error {
 		DB.nextID = 1
 		return nil
 	}
+	if DB.Tokens == nil {
+		DB.Tokens = make(map[string]string)
+	}
 	DB.filePath = dbPath
-	// Recalculate nextID from existing data
 	for _, s := range DB.Songs {
 		if s.ID >= DB.nextID {
 			DB.nextID = s.ID + 1
@@ -116,4 +123,51 @@ func SongExists(filePath string) bool {
 		}
 	}
 	return false
+}
+
+func generateToken() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return hex.EncodeToString(b)
+}
+
+func Register(username, password string) (*models.User, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	for _, u := range DB.Users {
+		if strings.EqualFold(u.Username, username) {
+			return nil, nil
+		}
+	}
+	user := models.User{
+		ID:       int64(len(DB.Users) + 1),
+		Username: username,
+		Password: password,
+	}
+	DB.Users = append(DB.Users, user)
+	if err := save(); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func Login(username, password string) (string, bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	for _, u := range DB.Users {
+		if strings.EqualFold(u.Username, username) && u.Password == password {
+			token := generateToken()
+			DB.Tokens[token] = username
+			save()
+			return token, true
+		}
+	}
+	return "", false
+}
+
+func ValidateToken(token string) (string, bool) {
+	mu.RLock()
+	defer mu.RUnlock()
+	username, ok := DB.Tokens[token]
+	return username, ok
 }

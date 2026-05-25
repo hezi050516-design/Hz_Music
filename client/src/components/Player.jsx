@@ -1,11 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom"
-import { usePlayer, MODE_LABELS } from "../context/PlayerContext"
+import { usePlayer } from "../context/PlayerContext"
+import { Repeat, Repeat1, SkipBack, Play, Pause, SkipForward, ListMusic } from "lucide-react"
 import "./Player.css"
 
 export default function Player({ onShowPlaylist }) {
   const { currentSong, playing, progress, duration, error, mode, cycleMode, togglePlay, seek, next, prev } = usePlayer()
   const nav = useNavigate()
   const loc = useLocation()
+
+  const hasSong = !!currentSong
+  const title = hasSong ? currentSong.title : "暂无播放"
+  const artist = hasSong ? currentSong.artist : ""
 
   const fmt = (t) => {
     if (!t || isNaN(t)) return "0:00"
@@ -15,14 +20,12 @@ export default function Player({ onShowPlaylist }) {
   }
 
   function goToDetail() {
-    if (loc.pathname === "/song") {
-      nav(-1)
-    } else if (currentSong) {
-      nav(`/song?id=${currentSong.id}&title=${encodeURIComponent(currentSong.title)}&artist=${encodeURIComponent(currentSong.artist)}`)
-    }
+    if (!currentSong) return
+    if (loc.pathname === "/song") nav(-1)
+    else nav(`/song?id=${currentSong.id}&title=${encodeURIComponent(currentSong.title)}&artist=${encodeURIComponent(currentSong.artist)}`)
   }
 
-  const modeChar = { "sequential": "\u2192", "loop-all": "\u21BA", "loop-one": "\u21BA1" }[mode]
+  const ModeIcon = mode === "loop-one" ? Repeat1 : Repeat
 
   function handleVolume(e) {
     const v = Number(e.target.value)
@@ -30,32 +33,37 @@ export default function Player({ onShowPlaylist }) {
     if (audio) audio.volume = v
   }
 
-  const hasSong = !!currentSong
-  const title = hasSong ? currentSong.title : "暂无播放"
-  const artist = hasSong ? currentSong.artist : "点击选择歌曲"
-
   return (
     <div className="player">
-      {error && <div className="player-error">{error}</div>}
-      <div className="player-info" onClick={goToDetail}>
-        <strong>{title}</strong>
-        <span style={{fontSize:10,color:"#888"}}>{artist}</span>
+      {error && <div className="player-error-msg">{error}</div>}
+      <div className="player-progress-bar" onClick={e => {
+        if (!hasSong) return
+        const rect = e.currentTarget.getBoundingClientRect()
+        seek((e.clientX - rect.left) / rect.width * (duration || 1))
+      }}>
+        <div className="player-progress-fill" style={{width: duration ? `${(progress/duration)*100}%` : "0%"}} />
       </div>
-      <div className="player-controls">
-        <button onClick={cycleMode} disabled={!hasSong} title={MODE_LABELS[mode]} style={{fontSize:14}}>{modeChar}</button>
-        <button onClick={prev} disabled={!hasSong}>⏮</button>
-        <button onClick={togglePlay} disabled={!hasSong}>{playing ? "⏸" : "▶"}</button>
-        <button onClick={next} disabled={!hasSong}>⏭</button>
-        <button onClick={onShowPlaylist} disabled={!hasSong} style={{fontSize:14}}>\u2630</button>
-      </div>
-      <div className="player-progress">
-        <span className="time">{fmt(progress)}</span>
-        <input type="range" min="0" max={duration || 1} value={progress} step="0.1"
-          disabled={!hasSong}
-          onInput={(e) => seek(Number(e.target.value))} />
-        <span className="time">{fmt(duration)}</span>
-        <input type="range" min="0" max="1" step="0.05" defaultValue="1"
-          onInput={handleVolume} className="volume-slider" title="音量" />
+      <div className="player-main">
+        <div className="player-info" onClick={goToDetail}>
+          <strong>{title}</strong>
+          {artist && <span>{artist}</span>}
+        </div>
+        <div className="player-ctrls">
+          <button onClick={cycleMode} className={mode !== "sequential" ? "active-ctrl" : ""}>
+            <ModeIcon size={16} />
+          </button>
+          <button onClick={prev} disabled={!hasSong}><SkipBack size={18} /></button>
+          <button onClick={togglePlay} disabled={!hasSong} className="play-btn">
+            {playing ? <Pause size={20} /> : <Play size={20} />}
+          </button>
+          <button onClick={next} disabled={!hasSong}><SkipForward size={18} /></button>
+          <button onClick={onShowPlaylist} disabled={!hasSong}><ListMusic size={16} /></button>
+        </div>
+        <div className="player-right">
+          <span className="player-time">{fmt(progress)} / {fmt(duration)}</span>
+          <input type="range" min="0" max="1" step="0.05" defaultValue="1"
+            onInput={handleVolume} className="volume-slider" />
+        </div>
       </div>
     </div>
   )
