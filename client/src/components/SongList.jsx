@@ -13,7 +13,7 @@ export default function SongList({ songs }) {
           <span className="song-index">{idx + 1}</span>
           <div className="song-info">
             <strong>{song.title}</strong>
-            <span>{song.artist} {song.album ? `— ${song.album}` : ""}</span>
+            <span>{song.artist}</span>
           </div>
           <span className="song-duration">{fmtDuration(song.duration)}</span>
         </div>

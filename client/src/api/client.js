@@ -1,4 +1,8 @@
 const CONFIG_KEY = "music-app-server-url"
+const CACHE_KEY = "music-app-cache-v3"
+const CACHE_TIME_KEY = "music-app-cache-time-v3"
+const CACHE_TTL = 5 * 60 * 1000
+
 const DEFAULT_URL = "http://192.168.1.100:8080"
 
 export function getServerUrl() {
@@ -6,26 +10,53 @@ export function getServerUrl() {
 }
 
 export function setServerUrl(url) {
-  localStorage.setItem(CONFIG_KEY, url)
+  localStorage.setItem(CONFIG_KEY, url.replace(/\/+$/, ""))
+}
+
+export function getCachedSongs() {
+  try {
+    const data = localStorage.getItem(CACHE_KEY)
+    const time = localStorage.getItem(CACHE_TIME_KEY)
+    if (data && time && Date.now() - Number(time) < CACHE_TTL) {
+      return JSON.parse(data)
+    }
+  } catch (e) {}
+  return null
+}
+
+function setCachedSongs(songs) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(songs))
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()))
+  } catch (e) {}
 }
 
 export async function api(path) {
-  const res = await fetch(`${getServerUrl()}${path}`)
-  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const base = getServerUrl().replace(/\/+$/, "")
+  const res = await fetch(`${base}${path}`)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json()
 }
 
+export async function fetchSongs(query) {
+  const path = query
+    ? `/api/songs?q=${encodeURIComponent(query)}`
+    : "/api/songs"
+  const songs = await api(path)
+  if (!query) setCachedSongs(songs)
+  return songs
+}
+
 export function streamUrl(songId) {
-  return `${getServerUrl()}/api/songs/${songId}/stream`
+  const base = getServerUrl().replace(/\/+$/, "")
+  return `${base}/api/songs/${songId}/stream`
 }
 
 export async function uploadSong(file) {
-  const form = new FormData()
-  form.append("file", file)
-  const res = await fetch(`${getServerUrl()}/api/upload`, {
-    method: "POST",
-    body: form,
-  })
+  const base = getServerUrl().replace(/\/+$/, "")
+  const body = new FormData()
+  body.append("file", file)
+  const res = await fetch(`${base}/api/upload`, { method: "POST", body })
   if (!res.ok) throw new Error("Upload failed")
   return res.json()
 }

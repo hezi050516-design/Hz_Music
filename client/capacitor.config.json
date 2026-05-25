@@ -1,5 +1,9 @@
 {
   "appId": "com.hzmusic.app",
   "appName": "HzMusic",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "cleartext": true,
+    "androidScheme": "http"
+  }
 }

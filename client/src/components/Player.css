@@ -45,8 +45,27 @@
   flex: 1;
   accent-color: #7c3aed;
 }
+.player-controls button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.volume-slider {
+  max-width: 60px;
+  flex: 0 !important;
+}
 .time {
   font-size: 11px;
   color: #888;
   min-width: 32px;
+}
+.player-error {
+  position: absolute;
+  top: -28px;
+  left: 0;
+  right: 0;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 12px;
+  text-align: center;
 }

@@ -1,7 +1,12 @@
-import { createContext, useContext, useRef, useState } from "react"
+import { createContext, useContext, useState, useRef, useCallback } from "react"
 import { streamUrl } from "../api/client"
 
 const PlayerContext = createContext()
+
+const MODES = ["sequential", "loop-all", "loop-one"]
+const MODE_LABELS = { "sequential": "顺序", "loop-all": "列表循环", "loop-one": "单曲循环" }
+
+export { MODES, MODE_LABELS }
 
 export function usePlayer() {
   return useContext(PlayerContext)
@@ -9,64 +14,130 @@ export function usePlayer() {
 
 export function PlayerProvider({ children }) {
   const [currentSong, setCurrentSong] = useState(null)
-  const [songList, setSongList] = useState([])
+  const [playlist, setPlaylist] = useState([])
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [error, setError] = useState("")
+  const [mode, setMode] = useState("sequential")
   const audioRef = useRef(null)
 
-  function getAudio() {
-    if (!audioRef.current) {
-      audioRef.current = new Audio()
-      audioRef.current.ontimeupdate = () => setProgress(audioRef.current.currentTime)
-      audioRef.current.onloadedmetadata = () => setDuration(audioRef.current.duration)
-      audioRef.current.onended = () => setPlaying(false)
-    }
-    return audioRef.current
+  function handleTimeUpdate() {
+    if (audioRef.current) setProgress(audioRef.current.currentTime)
+  }
+  function handleLoaded() {
+    if (audioRef.current) setDuration(audioRef.current.duration)
+  }
+
+  function cycleMode() {
+    setMode(m => MODES[(MODES.indexOf(m) + 1) % MODES.length])
+  }
+
+  function addToPlaylist(song) {
+    setPlaylist(p => {
+      if (p.find(s => s.id === song.id)) return p
+      return [...p, song]
+    })
+  }
+
+  function removeFromPlaylist(songId) {
+    setPlaylist(p => p.filter(s => s.id !== songId))
+  }
+
+  function clearPlaylist() {
+    setPlaylist([])
   }
 
   function play(song, list) {
-    const audio = getAudio()
-    if (list) setSongList(list)
-    if (currentSong?.id !== song?.id) {
-      setCurrentSong(song)
+    setError("")
+    setCurrentSong(song)
+    if (list && list.length) setPlaylist(list)
+    else if (!playlist.find(s => s.id === song.id)) {
+      setPlaylist(p => [...p, song])
+    }
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      audio.src = ""
       audio.src = streamUrl(song.id)
       audio.load()
+      audio.play().then(() => setPlaying(true)).catch(e => setError(e.message))
     }
-    audio.play().then(() => setPlaying(true)).catch(() => {})
   }
 
+  const onEnded = useCallback(() => {
+    if (!currentSong || !playlist.length) return
+    if (mode === "loop-one") {
+      play(currentSong)
+      return
+    }
+    const idx = playlist.findIndex(s => s.id === currentSong.id)
+    if (idx < 0) {
+      play(playlist[0])
+      return
+    }
+    if (idx < playlist.length - 1) {
+      play(playlist[idx + 1])
+    } else if (mode === "loop-all") {
+      play(playlist[0])
+    } else {
+      setPlaying(false)
+    }
+  }, [currentSong, playlist, mode])
+
   function togglePlay() {
-    const audio = getAudio()
+    const audio = audioRef.current
+    if (!audio) return
     if (playing) {
       audio.pause()
       setPlaying(false)
     } else {
-      audio.play().then(() => setPlaying(true)).catch(() => {})
+      audio.play().then(() => setPlaying(true)).catch(e => setError(e.message))
     }
   }
 
   function seek(time) {
-    getAudio().currentTime = time
+    if (audioRef.current) audioRef.current.currentTime = time
     setProgress(time)
   }
 
   function next() {
-    if (!currentSong || !songList.length) return
-    const idx = songList.findIndex((s) => s.id === currentSong.id)
-    const ns = songList[(idx + 1) % songList.length]
-    play(ns, songList)
+    if (!currentSong || !playlist.length) return
+    const idx = playlist.findIndex(s => s.id === currentSong.id)
+    if (idx < playlist.length - 1) {
+      play(playlist[idx + 1])
+    } else {
+      play(playlist[0])
+    }
   }
 
   function prev() {
-    if (!currentSong || !songList.length) return
-    const idx = songList.findIndex((s) => s.id === currentSong.id)
-    const ps = songList[(idx - 1 + songList.length) % songList.length]
-    play(ps, songList)
+    if (!currentSong || !playlist.length) return
+    const idx = playlist.findIndex(s => s.id === currentSong.id)
+    if (idx > 0) {
+      play(playlist[idx - 1])
+    } else {
+      play(playlist[playlist.length - 1])
+    }
   }
 
   return (
-    <PlayerContext.Provider value={{ currentSong, playing, progress, duration, play, togglePlay, seek, next, prev }}>
+    <PlayerContext.Provider value={{
+      currentSong, playing, progress, duration, error,
+      mode, cycleMode, playlist, addToPlaylist, removeFromPlaylist, clearPlaylist,
+      play, togglePlay, seek, next, prev,
+    }}>
+      <audio
+        ref={audioRef}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoaded}
+        onDurationChange={handleLoaded}
+        onEnded={onEnded}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onError={() => setError(audioRef.current?.error?.message || "")}
+        preload="auto"
+      />
       {children}
     </PlayerContext.Provider>
   )
