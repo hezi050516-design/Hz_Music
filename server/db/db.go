@@ -156,6 +156,11 @@ func Login(username, password string) (string, bool) {
 	defer mu.Unlock()
 	for _, u := range DB.Users {
 		if strings.EqualFold(u.Username, username) && u.Password == password {
+			for t, un := range DB.Tokens {
+				if strings.EqualFold(un, username) {
+					delete(DB.Tokens, t)
+				}
+			}
 			token := generateToken()
 			DB.Tokens[token] = username
 			save()

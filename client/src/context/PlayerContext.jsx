@@ -20,6 +20,7 @@ export function PlayerProvider({ children }) {
   const [duration, setDuration] = useState(0)
   const [error, setError] = useState("")
   const [mode, setMode] = useState("sequential")
+  const [toast, setToast] = useState("")
   const audioRef = useRef(null)
 
   function handleTimeUpdate() {
@@ -35,7 +36,11 @@ export function PlayerProvider({ children }) {
 
   function addToPlaylist(song) {
     setPlaylist(p => {
-      if (p.find(s => s.id === song.id)) return p
+      if (p.find(s => s.id === song.id)) {
+        setToast("已在播放列表中")
+        return p
+      }
+      setToast(`已添加: ${song.title}`)
       return [...p, song]
     })
   }
@@ -45,20 +50,28 @@ export function PlayerProvider({ children }) {
   }
 
   function clearPlaylist() {
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      audio.removeAttribute("src")
+    }
     setPlaylist([])
+    setCurrentSong(null)
+    setPlaying(false)
+    setProgress(0)
+    setDuration(0)
+    setError("")
   }
 
   function play(song, list) {
     setError("")
     setCurrentSong(song)
-    if (list && list.length) setPlaylist(list)
-    else if (!playlist.find(s => s.id === song.id)) {
+    if (!playlist.find(s => s.id === song.id)) {
       setPlaylist(p => [...p, song])
     }
     const audio = audioRef.current
     if (audio) {
       audio.pause()
-      audio.src = ""
       audio.src = streamUrl(song.id)
       audio.load()
       audio.play().then(() => setPlaying(true)).catch(e => setError(e.message))
@@ -104,26 +117,20 @@ export function PlayerProvider({ children }) {
   function next() {
     if (!currentSong || !playlist.length) return
     const idx = playlist.findIndex(s => s.id === currentSong.id)
-    if (idx < playlist.length - 1) {
-      play(playlist[idx + 1])
-    } else {
-      play(playlist[0])
-    }
+    if (idx < playlist.length - 1) play(playlist[idx + 1])
+    else play(playlist[0])
   }
 
   function prev() {
     if (!currentSong || !playlist.length) return
     const idx = playlist.findIndex(s => s.id === currentSong.id)
-    if (idx > 0) {
-      play(playlist[idx - 1])
-    } else {
-      play(playlist[playlist.length - 1])
-    }
+    if (idx > 0) play(playlist[idx - 1])
+    else play(playlist[playlist.length - 1])
   }
 
   return (
     <PlayerContext.Provider value={{
-      currentSong, playing, progress, duration, error,
+      currentSong, playing, progress, duration, error, toast,
       mode, cycleMode, playlist, addToPlaylist, removeFromPlaylist, clearPlaylist,
       play, togglePlay, seek, next, prev,
     }}>

@@ -1,11 +1,11 @@
 import { useNavigate, useLocation } from "react-router-dom"
-import { Music, Mic, Settings } from "lucide-react"
+import { Music, Mic, User } from "lucide-react"
 import "./TabBar.css"
 
 const TABS = [
   { path: "/", label: "音乐库", Icon: Music },
   { path: "/artists", label: "歌手", Icon: Mic },
-  { path: "/settings", label: "设置", Icon: Settings },
+  { path: "/settings", label: "我的", Icon: User },
 ]
 
 export default function TabBar() {

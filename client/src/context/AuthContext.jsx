@@ -54,8 +54,16 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  function refreshUser() {
+    try {
+      const u = localStorage.getItem("music-user")
+      const t = localStorage.getItem("music-token")
+      setUser(u && t ? { username: u, token: t } : null)
+    } catch (e) {}
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

@@ -4,7 +4,7 @@ import { Repeat, Repeat1, SkipBack, Play, Pause, SkipForward, ListMusic } from "
 import "./Player.css"
 
 export default function Player({ onShowPlaylist }) {
-  const { currentSong, playing, progress, duration, error, mode, cycleMode, togglePlay, seek, next, prev } = usePlayer()
+  const { currentSong, playing, progress, duration, error, toast, mode, cycleMode, togglePlay, seek, next, prev } = usePlayer()
   const nav = useNavigate()
   const loc = useLocation()
 
@@ -65,6 +65,7 @@ export default function Player({ onShowPlaylist }) {
             onInput={handleVolume} className="volume-slider" />
         </div>
       </div>
+      {toast && <div className="toast" key={toast}>{toast}</div>}
     </div>
   )
 }

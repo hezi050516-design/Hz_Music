@@ -1,6 +1,6 @@
 const CONFIG_KEY = "music-app-server-url"
-const CACHE_KEY = "music-app-cache-v3"
-const CACHE_TIME_KEY = "music-app-cache-time-v3"
+const CACHE_KEY = "music-app-cache-v4"
+const CACHE_TIME_KEY = "music-app-cache-time-v4"
 const CACHE_TTL = 5 * 60 * 1000
 
 const DEFAULT_URL = "http://192.168.1.100:8080"
@@ -49,7 +49,7 @@ export async function fetchSongs(query) {
 
 export function streamUrl(songId) {
   const base = getServerUrl().replace(/\/+$/, "")
-  return `${base}/api/songs/${songId}/stream`
+  return `${base}/api/songs/${songId}/stream?_=${Date.now()}`
 }
 
 export async function uploadSong(file) {

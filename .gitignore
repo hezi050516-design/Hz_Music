@@ -2,3 +2,5 @@
 music.json
 music/
 covers/
+*.exe
+server/*.exe

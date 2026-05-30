@@ -36,7 +36,6 @@ export default function Artists({ search }) {
           <div key={a.name} className="artist-card" style={{background:getColor(a.name)}}
             onClick={() => setSelected(a.name)}>
             <strong>{a.name}</strong>
-            <span>歌手</span>
           </div>
         ))}
       </div>

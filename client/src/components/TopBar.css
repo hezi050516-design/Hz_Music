@@ -2,22 +2,22 @@
   height: var(--topbar-height);
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 12px;
+  padding: 0 12px;
+  gap: 4px;
   background: var(--bg-primary);
   position: sticky;
   top: 0;
   z-index: 50;
+  justify-content: flex-end;
 }
-.topbar-title {
+.topbar-spacer {
   flex: 1;
-  font-size: 20px;
-  font-weight: 700;
 }
 .topbar-icon {
-  padding: 4px;
-  color: var(--text-primary);
+  padding: 6px;
+  color: var(--text-secondary);
 }
+.topbar-icon:hover { color: var(--text-primary); }
 .topbar-back {
   padding: 4px;
   color: var(--text-primary);

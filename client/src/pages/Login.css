@@ -1,0 +1,109 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg-primary);
+}
+.login-card {
+  width: 100%;
+  max-width: 360px;
+}
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.login-sub {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+.field-row input {
+  flex: 1;
+}
+.field-error {
+  font-size: 11px;
+  color: #e74c3c;
+  white-space: nowrap;
+}
+.field-success {
+  font-size: 13px;
+  color: var(--accent);
+  text-align: center;
+  margin-top: 12px;
+  background: rgba(29,185,84,0.12);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.login-card label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 12px 0 4px;
+}
+.login-card input[type="text"],
+.login-card input[type="password"] {
+  width: 100%;
+  background: var(--bg-hover);
+  border: 1px solid var(--bg-hover);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+}
+.login-card input::placeholder { color: var(--text-dim); }
+
+.captcha-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.captcha-box {
+  background: var(--bg-hover);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  min-width: 120px;
+  text-align: center;
+}
+.captcha-box:active { background: #333; }
+
+.login-btn {
+  width: 100%;
+  background: var(--accent) !important;
+  color: #000 !important;
+  padding: 12px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 20px;
+}
+.login-btn:hover { opacity: 0.9; }
+
+.login-toggle {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 16px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+.login-toggle:hover { color: var(--text-primary); }

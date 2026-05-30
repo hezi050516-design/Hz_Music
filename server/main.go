@@ -40,6 +40,7 @@ func main() {
 	mux.HandleFunc("/api/artists", handlers.ListArtists)
 	mux.HandleFunc("/api/register", handlers.Register)
 	mux.HandleFunc("/api/login", handlers.Login)
+	mux.HandleFunc("/api/captcha", handlers.GetCaptcha)
 	mux.HandleFunc("/api/upload", handlers.AuthMiddleware(handlers.UploadSong))
 	mux.HandleFunc("/api/scan", handlers.TriggerScan)
 	addr := ":8080"
